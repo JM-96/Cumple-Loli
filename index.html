@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Feliz cumpleaños 💜</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@1,9..144,600&family=DM+Sans:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{--bg:#2a1a3e;--ink:#fff2ee;--soft:#d9c6e8;--pink:#ff9eb5;--gold:#ffd27a}
+  *{box-sizing:border-box}
+  html,body{margin:0;min-height:100%}
+  body{background:radial-gradient(circle at 50% 0%,#4a2a63 0,var(--bg) 60%);color:var(--ink);font-family:"DM Sans",system-ui,sans-serif;line-height:1.6;display:flex;flex-direction:column;align-items:center;padding:4rem 1.25rem}
+  main{max-width:34rem;width:100%;text-align:center}
+  h1{font-family:Fraunces,Georgia,serif;font-style:italic;font-weight:600;font-size:clamp(2.8rem,12vw,5rem);line-height:1.05;margin:0 0 1rem;color:var(--pink)}
+  .sub{color:var(--soft);font-size:1.1rem;margin:0 0 2.5rem}
+  .days{display:inline-block;border:1px solid var(--gold);border-radius:999px;padding:.5rem 1.2rem;color:var(--gold);margin-bottom:2.5rem}
+  button{font:inherit;font-weight:500;background:var(--gold);color:#2a1a3e;border:0;border-radius:999px;padding:.9rem 2rem;font-size:1.05rem;cursor:pointer}
+  button:hover:not(:disabled){background:#ffe0a0}
+  button:disabled{opacity:.45;cursor:not-allowed}
+  .cuenta{font-family:Fraunces,Georgia,serif;font-style:italic;font-size:clamp(1.6rem,7vw,2.4rem);color:var(--ink);margin:0 0 1.5rem;font-variant-numeric:tabular-nums}
+  .cuenta small{display:block;font-family:"DM Sans",system-ui,sans-serif;font-style:normal;font-size:1rem;color:var(--soft);margin-bottom:.25rem}
+  button:focus-visible{outline:3px solid var(--pink);outline-offset:3px}
+  .regalo{margin-top:3.5rem;padding-top:2.5rem;border-top:1px solid rgba(255,255,255,.15)}
+  #sorpresa{display:none;margin:1.5rem 0 0;font-family:Fraunces,Georgia,serif;font-style:italic;font-size:1.5rem;color:var(--gold)}
+  #sorpresa.open{display:block;animation:in .8s ease}
+  #carta{display:none;margin-top:2.5rem;text-align:left;background:rgba(255,255,255,.07);border-radius:1rem;padding:1.75rem}
+  #carta.open{display:block;animation:in .8s ease}
+  #carta p{margin:0 0 1rem;max-width:34rem}
+  #carta p:last-child{margin:0;color:var(--gold);font-family:Fraunces,Georgia,serif;font-style:italic;font-size:1.3rem}
+  canvas{position:fixed;inset:0;pointer-events:none}
+  @keyframes in{from{opacity:0}to{opacity:1}}
+  @media (prefers-reduced-motion:reduce){#carta.open,#sorpresa.open{animation:none}}
+</style>
+</head>
+<body>
+<main>
+  <h1>Feliz cumpleaños, Loli</h1>
+  <p class="sub">Hoy el día es tuyo. Y yo tengo algo para ti.</p>
+
+  <p class="days" id="days"></p><br>
+
+  <button id="abrirCarta">Abrir mi carta</button>
+
+  <!-- ✏️ ESCRIBE AQUÍ TU CARTA (cada <p> es un párrafo) -->
+  <section id="carta" aria-live="polite">
+    <p>Gracias por hacerme reír incluso en los días malos.</p>
+    <p>Gracias por tu paciencia, por tus abrazos y por ser tú. Contigo todo es más fácil y más bonito.</p>
+    <p>Que este año te devuelva todo lo bueno que tú das a los demás.</p>
+    <p>Te quiero. Feliz cumpleaños 💜</p>
+  </section>
+
+  <div class="regalo">
+    <p class="cuenta" id="cuenta"></p>
+    <button id="abrirRegalo" disabled>Abrir mi regalo</button>
+    <!-- ✏️ ESTE TEXTO SALE CUANDO SE ACTIVA EL REGALO -->
+    <p id="sorpresa">¡Ya estoy aquí! Abre la puerta, tu regalo te está esperando 🎁</p>
+  </div>
+</main>
+<canvas id="c"></canvas>
+
+<script>
+  // Empezasteis el 3 de julio de 2015 (el mes empieza en 0: enero = 0, julio = 6)
+  const desde = new Date(2015, 6, 3);
+  // Los regalos se abren el 27 de octubre de 2026 a las 17:30 (octubre = 9)
+  const apertura = new Date(2026, 9, 27, 17, 30, 0);
+
+  const dias = Math.floor((Date.now() - desde) / 86400000);
+  document.getElementById("days").textContent = dias.toLocaleString("es-ES") + " días juntos";
+
+  const carta = document.getElementById("carta");
+  const btnCarta = document.getElementById("abrirCarta");
+  const btnRegalo = document.getElementById("abrirRegalo");
+  const sorpresa = document.getElementById("sorpresa");
+  const cuenta = document.getElementById("cuenta");
+
+  function tic(){
+    const falta = apertura - Date.now();
+    if (falta <= 0){
+      cuenta.innerHTML = "<small>Ya es la hora</small>🎁";
+      btnRegalo.disabled = false;
+      clearInterval(reloj);
+      return;
+    }
+    const d = Math.floor(falta / 86400000);
+    const h = Math.floor(falta / 3600000) % 24;
+    const m = Math.floor(falta / 60000) % 60;
+    const s = Math.floor(falta / 1000) % 60;
+    const dos = n => String(n).padStart(2, "0");
+    cuenta.innerHTML = "<small>Tu regalo se abre en</small>" + (d > 0 ? d + "d " : "") + dos(h) + ":" + dos(m) + ":" + dos(s);
+  }
+  const reloj = setInterval(tic, 1000);
+  tic();
+
+  btnCarta.addEventListener("click", () => {
+    carta.classList.add("open");
+    btnCarta.style.display = "none";
+    if (!matchMedia("(prefers-reduced-motion:reduce)").matches) confeti();
+  });
+
+  btnRegalo.addEventListener("click", () => {
+    sorpresa.classList.add("open");
+    btnRegalo.style.display = "none";
+    cuenta.style.display = "none";
+    if (!matchMedia("(prefers-reduced-motion:reduce)").matches) confeti();
+  });
+
+  function confeti(){
+    const c = document.getElementById("c"), x = c.getContext("2d");
+    c.width = innerWidth; c.height = innerHeight;
+    const col = ["#ff9eb5","#ffd27a","#fff2ee","#c9a0ff"];
+    const p = Array.from({length:140}, () => ({
+      x: Math.random()*c.width, y: -Math.random()*c.height,
+      r: 4+Math.random()*5, v: 2+Math.random()*3, s: Math.random()*2-1,
+      c: col[Math.floor(Math.random()*col.length)]
+    }));
+    let t = 0;
+    (function frame(){
+      x.clearRect(0,0,c.width,c.height);
+      p.forEach(q => { q.y += q.v; q.x += q.s; x.fillStyle = q.c; x.fillRect(q.x,q.y,q.r,q.r*1.6); });
+      if (++t < 260) requestAnimationFrame(frame); else x.clearRect(0,0,c.width,c.height);
+    })();
+  }
+</script>
+</body>
+</html>
